@@ -1,55 +1,50 @@
-import React from "react"
-import { compose, withProps } from "recompose"
-import { withScriptjs, withGoogleMap, GoogleMap, Marker } from "react-google-maps"
+import React, { Component } from "react";
+import { GoogleApiWrapper, InfoWindow, Marker } from "google-maps-react";
+import CurrentLocation from "./Map";
 
-const api_key="AIzaSyChmWE3DC9hQGeRZJs_7eS-BT033r2yPQQ"
-const MapComponent = compose(
-    
-    withProps({
-//#v=3.exp&
-    googleMapURL: "https://maps.googleapis.com/maps/api/js?libraries=geometry,drawing,places&key=AIzaSyChmWE3DC9hQGeRZJs_7eS-BT033r2yPQQ",
-    loadingElement: <div style={{ height: `100%` }} />,
-    containerElement: <div style={{ height: `400px` }} />,
-    mapElement: <div style={{ height: `100%` }} />,
-  }),
-  withScriptjs,
-  withGoogleMap
-)((props) =>
-  <GoogleMap
-    defaultZoom={8}
-    defaultCenter={{ lat: -34.397, lng: 150.644 }}
-  >
-    {props.isMarkerShown && <Marker position={{ lat: -34.397, lng: 150.644 }} onClick={props.onMarkerClick} />}
-  </GoogleMap>
-)
+const api_key = "AIzaSyChmWE3DC9hQGeRZJs_7eS-BT033r2yPQQ";
 
-class MyMapComponent extends React.PureComponent {
+export class MapContainer extends Component {
   state = {
-    isMarkerShown: false,
-  }
+    showingInfoWindo: false,
+    activeMarker: {},
+    selectedPlace: {},
+  };
 
-  componentDidMount() {
-    this.delayedShowMarker()
-  }
+  onMarkerClick = (props, marker, e) =>
+    this.setState({
+      selectedPlace: props,
+      activeMarker: marker,
+      showingInfoWindow: true,
+    });
 
-  delayedShowMarker = () => {
-    setTimeout(() => {
-      this.setState({ isMarkerShown: true })
-    }, 3000)
-  }
-
-  handleMarkerClick = () => {
-    this.setState({ isMarkerShown: false })
-    this.delayedShowMarker()
-  }
+  onClose = (props) => {
+    if (this.state.showingInfoWindow) {
+      this.setState({
+        showingInfoWindow: false,
+        activeMarker: null,
+      });
+    }
+  };
 
   render() {
     return (
-      <MapComponent
-        isMarkerShown={this.state.isMarkerShown}
-        onMarkerClick={this.handleMarkerClick}
-      />
-    )
+      <CurrentLocation centerAroundCurrentLocation google={this.props.google}>
+        <Marker onClick={this.onMarkerClick} name={"current location"} />
+        <InfoWindow
+          marker={this.state.activeMarker}
+          visible={this.state.showingInfoWindow}
+          onClose={this.onClose}
+        >
+          <div>
+            <h4>{this.state.selectedPlace.name}</h4>
+          </div>
+        </InfoWindow>
+      </CurrentLocation>
+    );
   }
 }
-export default MyMapComponent      
+
+export default GoogleApiWrapper({
+  apiKey: api_key,
+})(MapContainer);
