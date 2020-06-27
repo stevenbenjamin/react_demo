@@ -9,7 +9,7 @@ import "./App.css";
 const BaseLayout = () => (
   <div className="container-fluid">
     <nav className="navbar navbar-expand-lg navbar-light bg-light">
-      <a className="navbar-brand" href="#">
+      <a className="navbar-brand" href="#top">
         Django React Demo
       </a>
       <button
